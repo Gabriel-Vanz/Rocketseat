@@ -1,6 +1,6 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
-import { Answer } from "../entities/answer";
 import { AnswersRepository } from "../repositories/answers-repository";
+import { Answer } from "../../enterprise/entities/answer";
 
 interface AnswerQuestionUseCaseRequest {
   instructorId: string;
@@ -8,7 +8,11 @@ interface AnswerQuestionUseCaseRequest {
   content: string;
 }
 
-//Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
+interface CreateAnswerUseCaseResponse {
+  answer: Answer;
+}
+
+// Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class AnswerQuestionUseCase {
   constructor(private answerRepository: AnswersRepository) {}
 
@@ -16,7 +20,7 @@ export class AnswerQuestionUseCase {
     instructorId,
     questionId,
     content,
-  }: AnswerQuestionUseCaseRequest) {
+  }: AnswerQuestionUseCaseRequest): Promise<CreateAnswerUseCaseResponse> {
     const answer = Answer.create({
       content,
       authorId: new UniqueEntityID(instructorId),
@@ -24,6 +28,8 @@ export class AnswerQuestionUseCase {
     });
 
     await this.answerRepository.create(answer);
-    return answer;
+    return {
+      answer,
+    };
   }
 }
