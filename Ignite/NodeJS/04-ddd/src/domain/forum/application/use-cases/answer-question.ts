@@ -1,6 +1,7 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { AnswersRepository } from "../repositories/answers-repository";
 import { Answer } from "../../enterprise/entities/answer";
+import { Either, right } from "@/core/either";
 
 interface AnswerQuestionUseCaseRequest {
   instructorId: string;
@@ -8,10 +9,12 @@ interface AnswerQuestionUseCaseRequest {
   content: string;
 }
 
-interface CreateAnswerUseCaseResponse {
-  answer: Answer;
-}
-
+type CreateAnswerUseCaseResponse = Either<
+  null,
+  {
+    answer: Answer;
+  }
+>;
 // Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class AnswerQuestionUseCase {
   constructor(private answerRepository: AnswersRepository) {}
@@ -28,8 +31,8 @@ export class AnswerQuestionUseCase {
     });
 
     await this.answerRepository.create(answer);
-    return {
+    return right({
       answer,
-    };
+    });
   }
 }

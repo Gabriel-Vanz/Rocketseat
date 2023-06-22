@@ -1,14 +1,19 @@
+import { Either, left, right } from "@/core/either";
 import { QuestionComment } from "../../enterprise/entities/question-comment";
 import { QuestionCommentsRepository } from "../repositories/question-comments-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface FetchQuestionCommentsUseCaseRequest {
   questionId: string;
   page: number;
 }
 
-interface FetchQuestionCommentsUseCaseResponse {
-  questionComments: QuestionComment[];
-}
+type FetchQuestionCommentsUseCaseResponse = Either<
+  ResourceNotFoundError,
+  {
+    questionComments: QuestionComment[];
+  }
+>;
 
 // Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class FetchQuestionCommentsUseCase {
@@ -24,11 +29,11 @@ export class FetchQuestionCommentsUseCase {
       });
 
     if (!questionComments) {
-      throw new Error("Answers not found");
+      return left(new ResourceNotFoundError());
     }
 
-    return {
+    return right({
       questionComments,
-    };
+    });
   }
 }

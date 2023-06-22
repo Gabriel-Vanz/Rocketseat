@@ -1,13 +1,18 @@
+import { Either, left, right } from "@/core/either";
 import { Question } from "../../enterprise/entities/question";
 import { QuestionsRepository } from "../repositories/questions-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface FetchRecentQuestionsUseCaseRequest {
   page: number;
 }
 
-interface FetchRecentQuestionsUseCaseResponse {
-  questions: Question[];
-}
+type FetchRecentQuestionsUseCaseResponse = Either<
+  ResourceNotFoundError,
+  {
+    questions: Question[];
+  }
+>;
 
 // Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class FetchRecentQuestionsUseCase {
@@ -19,11 +24,11 @@ export class FetchRecentQuestionsUseCase {
     const questions = await this.questionsRepository.findManyRecent({ page });
 
     if (!questions) {
-      throw new Error("Question not found");
+      return left(new ResourceNotFoundError());
     }
 
-    return {
+    return right({
       questions,
-    };
+    });
   }
 }

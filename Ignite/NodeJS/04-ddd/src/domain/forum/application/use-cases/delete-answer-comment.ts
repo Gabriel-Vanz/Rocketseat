@@ -1,11 +1,17 @@
+import { Either, left, right } from "@/core/either";
 import { AnswerCommentsRepository } from "../repositories/answer-comments-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
+import { NotAllowedError } from "./errors/not-allowed-error";
 
 interface DeleteAnswerCommentUseCaseRequest {
   authorId: string;
   answerCommentId: string;
 }
 
-interface DeleteAnswerCommentUseCaseResponse {}
+type DeleteAnswerCommentUseCaseResponse = Either<
+  ResourceNotFoundError | NotAllowedError,
+  {}
+>;
 
 // Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class DeleteAnswerCommentUseCase {
@@ -20,15 +26,15 @@ export class DeleteAnswerCommentUseCase {
     );
 
     if (!answerComment) {
-      throw new Error("Answer Comment not found");
+      return left(new ResourceNotFoundError());
     }
 
     if (answerComment.authorId.toString() !== authorId) {
-      throw new Error("Not Allowed");
+      return left(new NotAllowedError());
     }
 
     await this.answerCommentsRepository.delete(answerComment);
 
-    return {};
+    return right({});
   }
 }

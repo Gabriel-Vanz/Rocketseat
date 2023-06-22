@@ -1,13 +1,17 @@
-import { UniqueEntityID } from "@/core/entities/unique-entity-id";
-import { Answer } from "../../enterprise/entities/answer";
+import { Either, left, right } from "@/core/either";
 import { AnswersRepository } from "../repositories/answers-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
+import { NotAllowedError } from "./errors/not-allowed-error";
 
 interface DeleteAnswerUseCaseRequest {
   answerId: string;
   authorId: string;
 }
 
-interface DeleteAnswerUseCaseResponse {}
+type DeleteAnswerUseCaseResponse = Either<
+  ResourceNotFoundError | NotAllowedError,
+  {}
+>;
 
 // Com as interfaces das entities, fica melhor o retorno como objeto, pois sabemos exatamente a ordem e como deve ser passado
 export class DeleteAnswerUseCase {
@@ -20,15 +24,15 @@ export class DeleteAnswerUseCase {
     const answer = await this.answersRepository.findById(answerId);
 
     if (!answer) {
-      throw new Error("Answer not found");
+      return left(new ResourceNotFoundError());
     }
 
     if (authorId !== answer.authorId.toString()) {
-      throw new Error("You can't delete this answer");
+      return right(new NotAllowedError());
     }
 
     await this.answersRepository.delete(answer);
 
-    return {};
+    return right({});
   }
 }
