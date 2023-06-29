@@ -3,6 +3,7 @@ import { makeQuestion } from "tests/factories/make-question";
 import { Slug } from "../../enterprise/entities/value-objects/slug";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { EditQuestionUseCase } from "./edit-question";
+import { NotAllowedError } from "./errors/not-allowed-error";
 
 // sut -> System Under Test
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
@@ -47,13 +48,13 @@ describe("Edit a question", () => {
 
     await inMemoryQuestionsRepository.create(newQuestion);
 
-    expect(() => {
-      return sut.execute({
-        authorId: "1235",
-        title: "New Title",
-        content: "New Content",
-        questionId: newQuestion.id.toValue(),
-      });
-    }).rejects.toBeInstanceOf(Error);
+    const result = await sut.execute({
+      authorId: "1235",
+      title: "New Title",
+      content: "New Content",
+      questionId: newQuestion.id.toValue(),
+    });
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 });

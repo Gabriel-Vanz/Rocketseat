@@ -3,6 +3,7 @@ import { makeQuestion } from "tests/factories/make-question";
 import { Slug } from "../../enterprise/entities/value-objects/slug";
 import { DeleteQuestionUseCase } from "./delete-question";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
+import { NotAllowedError } from "./errors/not-allowed-error";
 
 // sut -> System Under Test
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
@@ -42,11 +43,12 @@ describe("Delete a question", () => {
 
     await inMemoryQuestionsRepository.create(newQuestion);
 
-    expect(() => {
-      return sut.execute({
-        questionId: "question-1",
-        authorId: "1234",
-      });
-    }).rejects.toBeInstanceOf(Error);
+    const result = await sut.execute({
+      questionId: "question-1",
+      authorId: "1234",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 });

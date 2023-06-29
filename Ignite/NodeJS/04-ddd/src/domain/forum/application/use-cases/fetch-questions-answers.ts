@@ -9,7 +9,7 @@ interface FetchQuestionsAnswersUseCaseRequest {
 }
 
 type FetchQuestionsAnswersUseCaseResponse = Either<
-  ResourceNotFoundError,
+  null,
   {
     answers: Answer[];
   }
@@ -27,10 +27,6 @@ export class FetchQuestionsAnswersUseCase {
       questionId,
       { page }
     );
-
-    if (!answers) {
-      return left(new ResourceNotFoundError());
-    }
 
     return right({
       answers,
