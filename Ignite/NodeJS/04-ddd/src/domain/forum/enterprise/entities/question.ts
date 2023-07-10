@@ -1,8 +1,10 @@
+import { AggregateRoot } from "@/core/entities/aggregate-root";
 import { Slug } from "./value-objects/slug";
-import { Entity } from "@/core/entities/entity";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { Optional } from "@/core/types/optional";
 import dayjs from "dayjs";
+import { QuestionAttachment } from "./question-attachment";
+import { QuestionAttachmentList } from "./question-attachment-list";
 
 // Colocar todos os campos que não são opcionais e colocar em uma interface
 export interface QuestionProps {
@@ -11,11 +13,12 @@ export interface QuestionProps {
   title: string;
   content: string;
   slug: Slug;
+  attachments: QuestionAttachmentList;
   createdAt: Date;
   updatedAt?: Date;
 }
 
-export class Question extends Entity<QuestionProps> {
+export class Question extends AggregateRoot<QuestionProps> {
   // Como já temos o construtor exatamente igual ao da classe pai, não precisamos reescrever ele
   /* constructor(props: AnswerProps, id?: string) {
         super(props, id)
@@ -43,6 +46,10 @@ export class Question extends Entity<QuestionProps> {
 
   get slug() {
     return this.props.slug;
+  }
+
+  get attachments() {
+    return this.props.attachments;
   }
 
   get createdAt() {
@@ -77,14 +84,19 @@ export class Question extends Entity<QuestionProps> {
     this.touch();
   }
 
+  set attachments(attachments: QuestionAttachmentList) {
+    this.props.attachments = attachments;
+  }
+
   static create(
-    props: Optional<QuestionProps, "createdAt" | "slug">,
+    props: Optional<QuestionProps, "createdAt" | "slug" | "attachments">,
     id?: UniqueEntityID
   ) {
     const question = new Question(
       {
         ...props,
         slug: props.slug ?? Slug.createFromText(props.title),
+        attachments: props.attachments ?? new QuestionAttachmentList([]),
         createdAt: props.createdAt ?? new Date(),
       },
       id

@@ -4,14 +4,22 @@ import { Slug } from "../../enterprise/entities/value-objects/slug";
 import { DeleteQuestionUseCase } from "./delete-question";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { NotAllowedError } from "./errors/not-allowed-error";
+import { InMemoryQuestionAttachmentRepository } from "tests/repositories/in-memory-question-attachments-repository";
+import { makeQuestionAttachment } from "tests/factories/make-question-attachment";
 
 // sut -> System Under Test
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository;
 let sut: DeleteQuestionUseCase;
 
 describe("Delete a question", () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentRepository =
+      new InMemoryQuestionAttachmentRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentRepository
+    );
+
     sut = new DeleteQuestionUseCase(inMemoryQuestionsRepository);
   });
 
@@ -25,12 +33,24 @@ describe("Delete a question", () => {
 
     await inMemoryQuestionsRepository.create(newQuestion);
 
+    inMemoryQuestionAttachmentRepository.items.push(
+      makeQuestionAttachment({
+        questionId: newQuestion.id,
+        attachmentId: new UniqueEntityID("attachment-1"),
+      }),
+      makeQuestionAttachment({
+        questionId: newQuestion.id,
+        attachmentId: new UniqueEntityID("attachment-2"),
+      })
+    );
+
     await sut.execute({
       questionId: "question-1",
       authorId: "123",
     });
 
     expect(inMemoryQuestionsRepository.items).toHaveLength(0);
+    expect(inMemoryQuestionAttachmentRepository.items).toHaveLength(0);
   });
 
   it("should not be able to delete a question from another user", async () => {
