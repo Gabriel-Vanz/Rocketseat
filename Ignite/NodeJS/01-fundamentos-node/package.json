@@ -1,12 +1,11 @@
 {
-  "name": "01-fundamentos-nodejs",
+  "name": "01-fundamentos-node",
   "type": "module", 
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch .src/server.js"
+    "dev": "node --watch src/server.js"
   },
   "keywords": [],
   "author": "",
