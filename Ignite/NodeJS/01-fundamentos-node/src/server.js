@@ -1,39 +1,30 @@
-import http from 'node:http';
-import { randomUUID } from 'node:crypto';
-import { json } from './middlewares/json.js';
-import { Database } from './middlewares/database.js';
+import http from 'node:http'
 
-const database = new Database()
+import { json } from './middlewares/json.js'
+import { routes } from './routes.js'
+import { extractQueryParams } from './utils/extract-query-params.js'
 
-const  server = http.createServer(async (req, res) => {
-    const {url, method} = req
+const server = http.createServer(async (req, res) => {
+  const { method, url } = req
 
-    await json(req, res)
+  await json(req, res)
 
-    if (method === 'GET' && url === '/users') {
+  const route = routes.find(route => {
+    return route.method === method && route.path.test(url)
+  })
 
-        const users = database.select('users')
+  if (route) {
+    const routeParams = req.url.match(route.path)
 
-        return res
-            .end(JSON.stringify(users))
-    }
+    const { query, ...params } = routeParams.groups
 
-    if (method === 'POST' && url === '/users') {
+    req.params = params
+    req.query = query ? extractQueryParams(query) : {}
 
-        const {name, email} = req.body
+    return route.handler(req, res)
+  }
 
-        const user ={
-            id: randomUUID(), 
-            name, 
-            email
-        }
-
-        database.insert('users', user)
-
-        return res.writeHead(201).end()
-    }
-
-    return res.writeHead(404).end()
+  return res.writeHead(404).end()
 })
 
 server.listen(3333)
