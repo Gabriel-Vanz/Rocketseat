@@ -4,6 +4,12 @@ import { Database } from './middlewares/database.js';
 
 const database =  new Database()
 
+function validateTask(task){
+    if(!task){
+        return res.writeHead(404).end()
+    }
+}
+
 export const routes = [
     {
         method: 'GET',
@@ -54,9 +60,7 @@ export const routes = [
 
             const [task] = database.select('tasks', { id })
 
-            if(!task){
-                return res.writeHead(404).end()
-            }
+            validateTask(task)
 
             database.update('tasks', id, {
                 title: title ?? task.title,
@@ -76,9 +80,7 @@ export const routes = [
 
             const [task] = database.select('tasks', { id })
 
-            if(!task){
-                return res.writeHead(404).end()
-            }
+            validateTask(task)
 
             database.delete('tasks', id)
 
@@ -94,9 +96,7 @@ export const routes = [
 
             const [task] = database.select('tasks', { id })
 
-            if(!task){
-                return res.writeHead(404).end()
-            }
+            validateTask(task)
 
             const isTaskCompleted = !!task.completed_at
             const completed_at = isTaskCompleted ? null : new Date().toISOString()
