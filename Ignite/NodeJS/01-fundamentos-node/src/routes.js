@@ -13,7 +13,7 @@ export const routes = [
 
       const users = database.select('users', search ? {
         name: search,
-        email: search
+        email: search,
       } : null)
 
       return res.end(JSON.stringify(users))
